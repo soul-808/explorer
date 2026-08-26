@@ -1,0 +1,739 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Commerce Platform, System Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0E1520;
+    --ink-2:#3E4A5A;
+    --ink-3:#6C7889;
+    --paper:#F4F6F8;
+    --sheet:#FFFFFF;
+    --rule:#C9D1DA;
+    --rule-2:#E2E7ED;
+    --ext:#5B6A7D;
+    --ext-fill:#E9ECF0;
+    --edg:#8A6A1F;
+    --edg-fill:#F6F0E0;
+    --app:#1F5F66;
+    --app-fill:#E1EFF0;
+    --dat:#3B3A76;
+    --dat-fill:#E9E9F5;
+    --flag:#A3302A;
+    --flag-fill:#FAEDEC;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"IBM Plex Sans",system-ui,sans-serif;
+    font-size:14px;
+    line-height:1.6;
+  }
+  .sheet{
+    max-width:1460px;
+    margin:0 auto;
+    background:var(--sheet);
+    border-left:1px solid var(--rule);
+    border-right:1px solid var(--rule);
+    padding:0 40px 64px;
+  }
+  .cond{font-family:"IBM Plex Sans Condensed",sans-serif}
+  .mono{font-family:"IBM Plex Mono",monospace}
+
+  /* header */
+  header{
+    border-bottom:2px solid var(--ink);
+    padding:36px 0 18px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:32px;
+    align-items:end;
+  }
+  .eyebrow{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10.5px;
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    color:var(--ink-3);
+    margin:0 0 10px;
+  }
+  h1{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:700;
+    font-size:44px;
+    line-height:1.02;
+    letter-spacing:-.015em;
+    margin:0;
+    max-width:16ch;
+  }
+  .subtitle{
+    margin:12px 0 0;
+    font-size:15px;
+    color:var(--ink-2);
+    max-width:62ch;
+  }
+  .docctl{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    line-height:1.9;
+    color:var(--ink-2);
+    text-align:right;
+    white-space:nowrap;
+  }
+  .docctl b{color:var(--ink);font-weight:500}
+
+  /* sections */
+  section{padding-top:44px}
+  h2{
+    font-family:"IBM Plex Sans Condensed",sans-serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:-.01em;
+    margin:0 0 4px;
+  }
+  .secnum{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:11px;
+    color:var(--flag);
+    letter-spacing:.12em;
+    display:block;
+    margin-bottom:6px;
+  }
+  .lede{margin:0 0 20px;color:var(--ink-2);max-width:78ch}
+  hr{border:0;border-top:1px solid var(--rule-2);margin:0}
+
+  /* legend */
+  .legend{
+    display:flex;flex-wrap:wrap;gap:8px 26px;
+    padding:14px 16px;
+    border:1px solid var(--rule);
+    background:#FBFCFD;
+    margin-bottom:18px;
+  }
+  .key{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-2)}
+  .chip{width:22px;height:13px;border:1px solid;flex:none}
+  .k-ext .chip{background:var(--ext-fill);border-color:var(--ext)}
+  .k-edg .chip{background:var(--edg-fill);border-color:var(--edg)}
+  .k-app .chip{background:var(--app-fill);border-color:var(--app)}
+  .k-dat .chip{background:var(--dat-fill);border-color:var(--dat)}
+  .k-flag .chip{background:var(--flag-fill);border-color:var(--flag)}
+  .k-bnd .chip{background:transparent;border-style:dashed;border-color:var(--ink-3)}
+
+  .canvas{border:1px solid var(--rule);background:#FDFDFE;overflow-x:auto}
+  .canvas svg{display:block;width:100%;min-width:1180px;height:auto}
+
+  /* svg type */
+  .b-id{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.06em}
+  .b-name{font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;font-size:16px}
+  .b-tech{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.02em}
+  .b-desc{font-family:"IBM Plex Sans",sans-serif;font-size:11.5px}
+  .z-label{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em}
+  .if-tag{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.04em}
+
+  /* tables */
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;vertical-align:top;padding:9px 12px;border-bottom:1px solid var(--rule-2)}
+  thead th{
+    font-family:"IBM Plex Mono",monospace;
+    font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--ink-3);border-bottom:1px solid var(--ink);padding-bottom:8px;
+  }
+  tbody tr:hover{background:#FAFBFC}
+  td.id{font-family:"IBM Plex Mono",monospace;color:var(--flag);white-space:nowrap}
+  td.tight{white-space:nowrap}
+  .proto{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-2)}
+
+  /* two col */
+  .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
+  .card{border:1px solid var(--rule);padding:18px 20px;background:#FBFCFD}
+  .card h3{
+    font-family:"IBM Plex Sans Condensed",sans-serif;font-weight:600;
+    font-size:15px;margin:0 0 8px;
+  }
+  .card ul{margin:0;padding-left:16px}
+  .card li{margin-bottom:5px;font-size:12.5px;color:var(--ink-2)}
+
+  /* sequence */
+  ol.seq{counter-reset:s;list-style:none;margin:0;padding:0;border-top:1px solid var(--ink)}
+  ol.seq li{
+    counter-increment:s;
+    display:grid;grid-template-columns:52px 1fr;gap:16px;
+    padding:11px 0;border-bottom:1px solid var(--rule-2);
+  }
+  ol.seq li::before{
+    content:counter(s,decimal-leading-zero);
+    font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--flag);
+    padding-top:2px;
+  }
+  ol.seq b{font-weight:600}
+  ol.seq .who{
+    font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-3);
+    display:block;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;
+  }
+
+  /* title block */
+  .titleblock{
+    margin-top:52px;border:2px solid var(--ink);
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  }
+  .tb{border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding:12px 14px}
+  .tb:last-child{border-right:0}
+  .tb dt{
+    font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-3);margin:0 0 4px;
+  }
+  .tb dd{margin:0;font-size:13px;font-weight:500}
+  .tb-wide{grid-column:1 / -1;border-right:0;border-bottom:0;background:#FBFCFD}
+
+  .note{font-size:12px;color:var(--ink-3);margin-top:12px}
+
+  @media (max-width:760px){
+    .sheet{padding:0 18px 48px}
+    header{grid-template-columns:1fr}
+    .docctl{text-align:left}
+    h1{font-size:32px}
+  }
+  @media print{
+    body{background:#fff}
+    .sheet{border:0;max-width:none}
+    .canvas{break-inside:avoid}
+  }
+</style>
+
+<div class="sheet">
+
+<header>
+  <div>
+    <p class="eyebrow">System architecture · Level 2 container view</p>
+    <h1 class="cond">Agentic Commerce Platform</h1>
+    <p class="subtitle">Issuer side capability enabling verified AI agents to transact on cardholder accounts under provable delegated authority, built on Mastercard Agent Pay and Agentic Tokens.</p>
+  </div>
+  <div class="docctl">
+    <div>DRAWING <b>ACP-ARC-001</b></div>
+    <div>REVISION <b>A, draft</b></div>
+    <div>DATE <b>2026-08-26</b></div>
+    <div>NOTATION <b>C4 container</b></div>
+    <div>CLASSIFICATION <b>Internal</b></div>
+    <div>DOMAIN <b>US Consumer Cards</b></div>
+  </div>
+</header>
+
+<section>
+  <span class="secnum">01</span>
+  <h2 class="cond">Container diagram</h2>
+  <p class="lede">Four trust zones, twenty containers, fifteen numbered interfaces. Every box states its element type and implementing technology. Interfaces carry an identifier that resolves in the register at section 02. Lines show synchronous or asynchronous data flow, not control hierarchy.</p>
+
+  <div class="legend">
+    <div class="key k-ext"><span class="chip"></span>External, outside bank control</div>
+    <div class="key k-edg"><span class="chip"></span>Edge zone, DMZ</div>
+    <div class="key k-app"><span class="chip"></span>Application zone, internal</div>
+    <div class="key k-dat"><span class="chip"></span>Data zone, systems of record</div>
+    <div class="key k-flag"><span class="chip"></span>In PCI DSS cardholder data environment</div>
+    <div class="key k-bnd"><span class="chip"></span>Trust boundary</div>
+  </div>
+
+  <div class="canvas">
+  <svg viewBox="0 0 1400 1130" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="archtitle archdesc">
+    <title id="archtitle">Container diagram for the issuer agentic commerce platform</title>
+    <desc id="archdesc">Four horizontal trust zones. External systems including the cardholder, agent surface, Mastercard Agent Pay and the authorization network. An edge zone with mobile backend, agent API gateway, webhook receiver, network interface adapter and identity provider. An application zone with ten services and an event backbone. A data zone with the mandate vault, consent ledger, card core, rewards platform and audit archive.</desc>
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M1 1L9 5L1 9" fill="none" stroke="context-stroke" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+    </defs>
+
+    <!-- ZONE 1 -->
+    <rect x="30" y="60" width="1340" height="160" fill="none" stroke="#6C7889" stroke-width="1" stroke-dasharray="6 5"/>
+    <text class="z-label" x="42" y="82" fill="#5B6A7D">EXTERNAL / INTERNET · UNTRUSTED</text>
+
+    <g>
+      <rect x="62" y="96" width="240" height="100" rx="4" fill="#E9ECF0" stroke="#5B6A7D" stroke-width="1"/>
+      <text class="b-id" x="74" y="114" fill="#5B6A7D">EXT-01</text>
+      <text class="b-name" x="74" y="138" fill="#0E1520">Cardholder</text>
+      <text class="b-tech" x="74" y="156" fill="#5B6A7D">Person</text>
+      <text class="b-desc" x="74" y="175" fill="#3E4A5A">Grants, scopes and revokes agent</text>
+      <text class="b-desc" x="74" y="189" fill="#3E4A5A">authority. Raises claims.</text>
+    </g>
+    <g>
+      <rect x="326" y="96" width="240" height="100" rx="4" fill="#E9ECF0" stroke="#5B6A7D" stroke-width="1"/>
+      <text class="b-id" x="338" y="114" fill="#5B6A7D">EXT-02</text>
+      <text class="b-name" x="338" y="138" fill="#0E1520">Agent surface</text>
+      <text class="b-tech" x="338" y="156" fill="#5B6A7D">External system · UCP, ACP client</text>
+      <text class="b-desc" x="338" y="175" fill="#3E4A5A">Discovers, builds cart, signs</text>
+      <text class="b-desc" x="338" y="189" fill="#3E4A5A">mandates, initiates checkout.</text>
+    </g>
+    <g>
+      <rect x="590" y="96" width="240" height="100" rx="4" fill="#E9ECF0" stroke="#5B6A7D" stroke-width="1"/>
+      <text class="b-id" x="602" y="114" fill="#5B6A7D">EXT-03</text>
+      <text class="b-name" x="602" y="138" fill="#0E1520">Agent Pay and MDES</text>
+      <text class="b-tech" x="602" y="156" fill="#5B6A7D">External system · Mastercard</text>
+      <text class="b-desc" x="602" y="175" fill="#3E4A5A">Mints Agentic Tokens bound to</text>
+      <text class="b-desc" x="602" y="189" fill="#3E4A5A">agent, merchant scope, policy.</text>
+    </g>
+    <g>
+      <rect x="854" y="96" width="240" height="100" rx="4" fill="#E9ECF0" stroke="#5B6A7D" stroke-width="1"/>
+      <text class="b-id" x="866" y="114" fill="#5B6A7D">EXT-04</text>
+      <text class="b-name" x="866" y="138" fill="#0E1520">Authorization network</text>
+      <text class="b-tech" x="866" y="156" fill="#5B6A7D">External system · Mastercard rails</text>
+      <text class="b-desc" x="866" y="175" fill="#3E4A5A">Carries auth, agent indicator,</text>
+      <text class="b-desc" x="866" y="189" fill="#3E4A5A">token assurance, disputes.</text>
+    </g>
+    <g>
+      <rect x="1118" y="96" width="240" height="100" rx="4" fill="#E9ECF0" stroke="#5B6A7D" stroke-width="1"/>
+      <text class="b-id" x="1130" y="114" fill="#5B6A7D">EXT-05</text>
+      <text class="b-name" x="1130" y="138" fill="#0E1520">Merchant and acquirer</text>
+      <text class="b-tech" x="1130" y="156" fill="#5B6A7D">External system</text>
+      <text class="b-desc" x="1130" y="175" fill="#3E4A5A">Verifies agent identity, submits</text>
+      <text class="b-desc" x="1130" y="189" fill="#3E4A5A">auth, defends chargebacks.</text>
+    </g>
+
+    <!-- Z1 to Z2 connectors -->
+    <line x1="182" y1="196" x2="182" y2="310" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="190" y="258" fill="#A3302A">IF-01</text>
+    <line x1="446" y1="196" x2="446" y2="310" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="454" y="258" fill="#A3302A">IF-02</text>
+    <line x1="710" y1="196" x2="710" y2="310" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="718" y="258" fill="#A3302A">IF-03</text>
+    <line x1="974" y1="196" x2="974" y2="310" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="982" y="258" fill="#A3302A">IF-04</text>
+    <line x1="1238" y1="196" x2="1238" y2="240" stroke="#6C7889" stroke-width="1.2" stroke-dasharray="3 4"/>
+    <line x1="1238" y1="240" x2="1000" y2="240" stroke="#6C7889" stroke-width="1.2" stroke-dasharray="3 4" marker-end="url(#ar)"/>
+    <text class="if-tag" x="1060" y="232" fill="#6C7889">IF-16 via network</text>
+
+    <!-- ZONE 2 -->
+    <rect x="30" y="280" width="1340" height="160" fill="none" stroke="#8A6A1F" stroke-width="1" stroke-dasharray="6 5"/>
+    <text class="z-label" x="42" y="302" fill="#8A6A1F">EDGE ZONE / DMZ · MUTUAL TLS, WAF, RATE LIMITED</text>
+
+    <g>
+      <rect x="62" y="316" width="240" height="100" rx="4" fill="#F6F0E0" stroke="#8A6A1F" stroke-width="1"/>
+      <text class="b-id" x="74" y="334" fill="#8A6A1F">EDG-01</text>
+      <text class="b-name" x="74" y="358" fill="#0E1520">Mobile and web BFF</text>
+      <text class="b-tech" x="74" y="376" fill="#8A6A1F">Container · Node, GraphQL</text>
+      <text class="b-desc" x="74" y="395" fill="#3E4A5A">Enrollment, scope editor and</text>
+      <text class="b-desc" x="74" y="409" fill="#3E4A5A">kill switch in the bank app.</text>
+    </g>
+    <g>
+      <rect x="326" y="316" width="240" height="100" rx="4" fill="#F6F0E0" stroke="#8A6A1F" stroke-width="1"/>
+      <text class="b-id" x="338" y="334" fill="#8A6A1F">EDG-02</text>
+      <text class="b-name" x="338" y="358" fill="#0E1520">Agent API gateway</text>
+      <text class="b-tech" x="338" y="376" fill="#8A6A1F">Container · Apigee, OAuth 2.1</text>
+      <text class="b-desc" x="338" y="395" fill="#3E4A5A">Terminates agent traffic. Verifies</text>
+      <text class="b-desc" x="338" y="409" fill="#3E4A5A">RFC 9421 signatures.</text>
+    </g>
+    <g>
+      <rect x="590" y="316" width="240" height="100" rx="4" fill="#F6F0E0" stroke="#8A6A1F" stroke-width="1"/>
+      <text class="b-id" x="602" y="334" fill="#8A6A1F">EDG-03</text>
+      <text class="b-name" x="602" y="358" fill="#0E1520">Network callback receiver</text>
+      <text class="b-tech" x="602" y="376" fill="#8A6A1F">Container · Java, JWS verify</text>
+      <text class="b-desc" x="602" y="395" fill="#3E4A5A">Ingests token lifecycle and</text>
+      <text class="b-desc" x="602" y="409" fill="#3E4A5A">consent policy callbacks.</text>
+    </g>
+    <g>
+      <rect x="854" y="316" width="240" height="100" rx="4" fill="#F6F0E0" stroke="#A3302A" stroke-width="1.6"/>
+      <text class="b-id" x="866" y="334" fill="#A3302A">EDG-04 · CDE</text>
+      <text class="b-name" x="866" y="358" fill="#0E1520">Network interface adapter</text>
+      <text class="b-tech" x="866" y="376" fill="#8A6A1F">Container · ISO 8583, HSM</text>
+      <text class="b-desc" x="866" y="395" fill="#3E4A5A">Authorization message handling</text>
+      <text class="b-desc" x="866" y="409" fill="#3E4A5A">and cryptographic services.</text>
+    </g>
+    <g>
+      <rect x="1118" y="316" width="240" height="100" rx="4" fill="#F6F0E0" stroke="#8A6A1F" stroke-width="1"/>
+      <text class="b-id" x="1130" y="334" fill="#8A6A1F">EDG-05</text>
+      <text class="b-name" x="1130" y="358" fill="#0E1520">Enterprise identity</text>
+      <text class="b-tech" x="1130" y="376" fill="#8A6A1F">Container · OIDC, FAPI 2.0</text>
+      <text class="b-desc" x="1130" y="395" fill="#3E4A5A">Cardholder authentication and</text>
+      <text class="b-desc" x="1130" y="409" fill="#3E4A5A">step up for high value scopes.</text>
+    </g>
+
+    <!-- Z2 to Z3 connectors -->
+    <line x1="182" y1="416" x2="182" y2="530" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="190" y="478" fill="#A3302A">IF-05</text>
+    <line x1="446" y1="416" x2="446" y2="530" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="454" y="478" fill="#A3302A">IF-06</text>
+    <line x1="710" y1="416" x2="710" y2="530" stroke="#6C7889" stroke-width="1.2" stroke-dasharray="4 4" marker-end="url(#ar)"/>
+    <text class="if-tag" x="718" y="478" fill="#A3302A">IF-07</text>
+    <line x1="974" y1="416" x2="974" y2="530" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="982" y="478" fill="#A3302A">IF-08</text>
+    <line x1="1238" y1="416" x2="1238" y2="530" stroke="#6C7889" stroke-width="1.2" stroke-dasharray="2 5"/>
+    <text class="if-tag" x="1246" y="478" fill="#6C7889">trust</text>
+
+    <!-- ZONE 3 -->
+    <rect x="30" y="500" width="1340" height="348" fill="none" stroke="#1F5F66" stroke-width="1" stroke-dasharray="6 5"/>
+    <text class="z-label" x="42" y="522" fill="#1F5F66">APPLICATION ZONE · INTERNAL, ZERO TRUST SERVICE MESH</text>
+
+    <g>
+      <rect x="62" y="536" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="74" y="554" fill="#1F5F66">APP-01</text>
+      <text class="b-name" x="74" y="578" fill="#0E1520">Agent enablement</text>
+      <text class="b-tech" x="74" y="596" fill="#1F5F66">Service · Java, gRPC</text>
+      <text class="b-desc" x="74" y="615" fill="#3E4A5A">Registers agents to an account,</text>
+      <text class="b-desc" x="74" y="629" fill="#3E4A5A">issues and revokes scopes.</text>
+    </g>
+    <g>
+      <rect x="326" y="536" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="338" y="554" fill="#1F5F66">APP-02</text>
+      <text class="b-name" x="338" y="578" fill="#0E1520">Consent and mandate</text>
+      <text class="b-tech" x="338" y="596" fill="#1F5F66">Service · W3C VC, Ed25519</text>
+      <text class="b-desc" x="338" y="615" fill="#3E4A5A">Verifies intent and cart mandates.</text>
+      <text class="b-desc" x="338" y="629" fill="#3E4A5A">Issues consent receipts.</text>
+    </g>
+    <g>
+      <rect x="590" y="536" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="602" y="554" fill="#1F5F66">APP-03</text>
+      <text class="b-name" x="602" y="578" fill="#0E1520">Limits and scope</text>
+      <text class="b-tech" x="602" y="596" fill="#1F5F66">Service · rules engine, Redis</text>
+      <text class="b-desc" x="602" y="615" fill="#3E4A5A">Per agent caps, velocity, merchant</text>
+      <text class="b-desc" x="602" y="629" fill="#3E4A5A">and category allow lists.</text>
+    </g>
+    <g>
+      <rect x="854" y="536" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="866" y="554" fill="#1F5F66">APP-04</text>
+      <text class="b-name" x="866" y="578" fill="#0E1520">Fraud decisioning</text>
+      <text class="b-tech" x="866" y="596" fill="#1F5F66">Service · feature store, ML</text>
+      <text class="b-desc" x="866" y="615" fill="#3E4A5A">Agent aware scoring inside the</text>
+      <text class="b-desc" x="866" y="629" fill="#3E4A5A">authorization latency budget.</text>
+    </g>
+    <g>
+      <rect x="1118" y="536" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="1130" y="554" fill="#1F5F66">APP-05</text>
+      <text class="b-name" x="1130" y="578" fill="#0E1520">Offer eligibility</text>
+      <text class="b-tech" x="1130" y="596" fill="#1F5F66">Service · low latency API</text>
+      <text class="b-desc" x="1130" y="615" fill="#3E4A5A">Answers what this cart is worth</text>
+      <text class="b-desc" x="1130" y="629" fill="#3E4A5A">on this card, pre checkout.</text>
+    </g>
+
+    <g>
+      <rect x="62" y="660" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="74" y="678" fill="#1F5F66">APP-06</text>
+      <text class="b-name" x="74" y="702" fill="#0E1520">Evidence service</text>
+      <text class="b-tech" x="74" y="720" fill="#1F5F66">Service · event sourced</text>
+      <text class="b-desc" x="74" y="739" fill="#3E4A5A">Assembles mandate, agent id,</text>
+      <text class="b-desc" x="74" y="753" fill="#3E4A5A">action log, cart, delivery proof.</text>
+    </g>
+    <g>
+      <rect x="326" y="660" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="338" y="678" fill="#1F5F66">APP-07</text>
+      <text class="b-name" x="338" y="702" fill="#0E1520">Dispute orchestration</text>
+      <text class="b-tech" x="338" y="720" fill="#1F5F66">Service · BPM, SLA timers</text>
+      <text class="b-desc" x="338" y="739" fill="#3E4A5A">Regulation Z workflows extended</text>
+      <text class="b-desc" x="338" y="753" fill="#3E4A5A">for delegated authority claims.</text>
+    </g>
+    <g>
+      <rect x="590" y="660" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="602" y="678" fill="#1F5F66">APP-08</text>
+      <text class="b-name" x="602" y="702" fill="#0E1520">Notification service</text>
+      <text class="b-tech" x="602" y="720" fill="#1F5F66">Service · push, SMS, email</text>
+      <text class="b-desc" x="602" y="739" fill="#3E4A5A">Real time agent purchase alerts</text>
+      <text class="b-desc" x="602" y="753" fill="#3E4A5A">with one tap dispute entry.</text>
+    </g>
+    <g>
+      <rect x="854" y="660" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="866" y="678" fill="#1F5F66">APP-09</text>
+      <text class="b-name" x="866" y="702" fill="#0E1520">Policy administration</text>
+      <text class="b-tech" x="866" y="720" fill="#1F5F66">Service · versioned config</text>
+      <text class="b-desc" x="866" y="739" fill="#3E4A5A">Product level agent policy, staged</text>
+      <text class="b-desc" x="866" y="753" fill="#3E4A5A">rollout, emergency disable.</text>
+    </g>
+    <g>
+      <rect x="1118" y="660" width="240" height="100" rx="4" fill="#E1EFF0" stroke="#1F5F66" stroke-width="1"/>
+      <text class="b-id" x="1130" y="678" fill="#1F5F66">APP-10</text>
+      <text class="b-name" x="1130" y="702" fill="#0E1520">Reconciliation</text>
+      <text class="b-tech" x="1130" y="720" fill="#1F5F66">Service · batch and stream</text>
+      <text class="b-desc" x="1130" y="739" fill="#3E4A5A">Matches mandates to postings.</text>
+      <text class="b-desc" x="1130" y="753" fill="#3E4A5A">Flags unmandated spend.</text>
+    </g>
+
+    <rect x="62" y="784" width="1296" height="44" rx="4" fill="#CFE3E5" stroke="#1F5F66" stroke-width="1"/>
+    <text class="b-id" x="74" y="802" fill="#1F5F66">APP-11</text>
+    <text class="b-name" x="74" y="818" fill="#0E1520">Event backbone</text>
+    <text class="b-tech" x="240" y="817" fill="#1F5F66">Kafka · Avro · schema registry · exactly once semantics · topic level encryption</text>
+    <text class="if-tag" x="1220" y="817" fill="#A3302A">IF-12</text>
+
+    <!-- Z3 to Z4 connectors -->
+    <line x1="182" y1="828" x2="182" y2="938" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="190" y="888" fill="#A3302A">IF-13</text>
+    <line x1="446" y1="828" x2="446" y2="938" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="454" y="888" fill="#A3302A">IF-14</text>
+    <line x1="710" y1="828" x2="710" y2="938" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <line x1="974" y1="828" x2="974" y2="938" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <line x1="1238" y1="828" x2="1238" y2="938" stroke="#6C7889" stroke-width="1.2" marker-end="url(#ar)"/>
+    <text class="if-tag" x="1246" y="888" fill="#A3302A">IF-15</text>
+
+    <!-- ZONE 4 -->
+    <rect x="30" y="908" width="1340" height="160" fill="none" stroke="#3B3A76" stroke-width="1" stroke-dasharray="6 5"/>
+    <text class="z-label" x="42" y="930" fill="#3B3A76">DATA ZONE · SYSTEMS OF RECORD, ENCRYPTED AT REST</text>
+
+    <g>
+      <rect x="62" y="944" width="240" height="100" rx="4" fill="#E9E9F5" stroke="#A3302A" stroke-width="1.6"/>
+      <text class="b-id" x="74" y="962" fill="#A3302A">DAT-01 · CDE</text>
+      <text class="b-name" x="74" y="986" fill="#0E1520">Mandate vault</text>
+      <text class="b-tech" x="74" y="1004" fill="#3B3A76">Datastore · HSM backed, KMS</text>
+      <text class="b-desc" x="74" y="1023" fill="#3E4A5A">Signed intent and cart mandates.</text>
+      <text class="b-desc" x="74" y="1037" fill="#3E4A5A">The only new system of record.</text>
+    </g>
+    <g>
+      <rect x="326" y="944" width="240" height="100" rx="4" fill="#E9E9F5" stroke="#3B3A76" stroke-width="1"/>
+      <text class="b-id" x="338" y="962" fill="#3B3A76">DAT-02</text>
+      <text class="b-name" x="338" y="986" fill="#0E1520">Consent ledger</text>
+      <text class="b-tech" x="338" y="1004" fill="#3B3A76">Datastore · append only</text>
+      <text class="b-desc" x="338" y="1023" fill="#3E4A5A">Immutable history of grant, scope</text>
+      <text class="b-desc" x="338" y="1037" fill="#3E4A5A">change and revocation.</text>
+    </g>
+    <g>
+      <rect x="590" y="944" width="240" height="100" rx="4" fill="#E9E9F5" stroke="#A3302A" stroke-width="1.6"/>
+      <text class="b-id" x="602" y="962" fill="#A3302A">DAT-03 · CDE</text>
+      <text class="b-name" x="602" y="986" fill="#0E1520">Card core and ledger</text>
+      <text class="b-tech" x="602" y="1004" fill="#3B3A76">Datastore · mainframe</text>
+      <text class="b-desc" x="602" y="1023" fill="#3E4A5A">Accounts, balances, postings.</text>
+      <text class="b-desc" x="602" y="1037" fill="#3E4A5A">Extended with agent indicator.</text>
+    </g>
+    <g>
+      <rect x="854" y="944" width="240" height="100" rx="4" fill="#E9E9F5" stroke="#3B3A76" stroke-width="1"/>
+      <text class="b-id" x="866" y="962" fill="#3B3A76">DAT-04</text>
+      <text class="b-name" x="866" y="986" fill="#0E1520">Rewards and offers</text>
+      <text class="b-tech" x="866" y="1004" fill="#3B3A76">Platform · merchant funded</text>
+      <text class="b-desc" x="866" y="1023" fill="#3E4A5A">Source of truth for benefits and</text>
+      <text class="b-desc" x="866" y="1037" fill="#3E4A5A">offers behind APP-05.</text>
+    </g>
+    <g>
+      <rect x="1118" y="944" width="240" height="100" rx="4" fill="#E9E9F5" stroke="#3B3A76" stroke-width="1"/>
+      <text class="b-id" x="1130" y="962" fill="#3B3A76">DAT-05</text>
+      <text class="b-name" x="1130" y="986" fill="#0E1520">Audit archive</text>
+      <text class="b-tech" x="1130" y="1004" fill="#3B3A76">Datastore · WORM, 7 year</text>
+      <text class="b-desc" x="1130" y="1023" fill="#3E4A5A">Action logs and evidence packs</text>
+      <text class="b-desc" x="1130" y="1037" fill="#3E4A5A">held for examination.</text>
+    </g>
+
+    <text class="b-tech" x="30" y="1100" fill="#6C7889">Solid line, synchronous request. Dashed line, asynchronous event or out of band flow. Red border, container in PCI DSS scope.</text>
+  </svg>
+  </div>
+  <p class="note">Cross cutting containers not drawn: secrets management, service mesh certificate authority, observability pipeline, and privileged access management. They apply to every container in the application and data zones and are specified at section 05.</p>
+</section>
+
+<section>
+  <span class="secnum">02</span>
+  <h2 class="cond">Interface register</h2>
+  <p class="lede">Every line on the drawing resolves here. Latency figures are budgets, not measurements.</p>
+  <table>
+    <thead>
+      <tr><th>Ref</th><th>Source</th><th>Target</th><th>Protocol and transport</th><th>Authentication</th><th>Payload</th><th>Mode</th></tr>
+    </thead>
+    <tbody>
+      <tr><td class="id">IF-01</td><td>EXT-01 Cardholder</td><td>EDG-01 BFF</td><td class="proto">HTTPS, TLS 1.3</td><td class="proto">OIDC, FAPI 2.0</td><td>Enrollment, scope change, revocation</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-02</td><td>EXT-02 Agent surface</td><td>EDG-02 API gateway</td><td class="proto">HTTPS, mTLS</td><td class="proto">OAuth 2.1 plus RFC 9421 signature</td><td>Agent identity, scope query, mandate submission</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-03</td><td>EXT-03 Agent Pay</td><td>EDG-03 Callback receiver</td><td class="proto">HTTPS, mTLS, JWS</td><td class="proto">Signed webhook, replay window</td><td>Token lifecycle, consent policy update</td><td class="tight">Async</td></tr>
+      <tr><td class="id">IF-04</td><td>EXT-04 Auth network</td><td>EDG-04 Network adapter</td><td class="proto">ISO 8583, migrating ISO 20022</td><td class="proto">Leased line, HSM keys</td><td>Authorization with agent indicator and token assurance</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-05</td><td>EDG-01 BFF</td><td>APP-01 Agent enablement</td><td class="proto">gRPC over mTLS</td><td class="proto">Workload identity, SPIFFE</td><td>Enable, scope, revoke</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-06</td><td>EDG-02 API gateway</td><td>APP-02 Consent and mandate</td><td class="proto">REST, JSON, mTLS</td><td class="proto">Workload identity</td><td>Mandate verification, consent receipt</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-07</td><td>EDG-03 Callback receiver</td><td>APP-03 Limits and scope</td><td class="proto">Kafka topic agent.token.v1</td><td class="proto">SASL, mTLS</td><td>Token scope and status change</td><td class="tight">Async, at least once</td></tr>
+      <tr><td class="id">IF-08</td><td>EDG-04 Network adapter</td><td>APP-04 Fraud decisioning</td><td class="proto">gRPC, in flight</td><td class="proto">Workload identity</td><td>Score request carrying mandate reference</td><td class="tight">Sync, 80 ms</td></tr>
+      <tr><td class="id">IF-09</td><td>APP-04 Fraud</td><td>APP-03 Limits and scope</td><td class="proto">gRPC</td><td class="proto">Workload identity</td><td>Cap, velocity and allow list check</td><td class="tight">Sync, 25 ms</td></tr>
+      <tr><td class="id">IF-10</td><td>APP-05 Offer eligibility</td><td>DAT-04 Rewards</td><td class="proto">REST, read through cache</td><td class="proto">Service account</td><td>Cart level benefit and offer valuation</td><td class="tight">Sync, 150 ms</td></tr>
+      <tr><td class="id">IF-11</td><td>APP-06 Evidence</td><td>DAT-01 Mandate vault</td><td class="proto">Internal API, KMS wrapped</td><td class="proto">Envelope encryption, dual control</td><td>Signed intent and cart retrieval</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-12</td><td>APP-01 to APP-10</td><td>APP-11 Event backbone</td><td class="proto">Kafka, Avro</td><td class="proto">SASL, mTLS</td><td>Domain events, schema governed</td><td class="tight">Async</td></tr>
+      <tr><td class="id">IF-13</td><td>APP-11 Backbone</td><td>DAT-01, DAT-02</td><td class="proto">Kafka Connect</td><td class="proto">Service account</td><td>Mandate and consent persistence</td><td class="tight">Async</td></tr>
+      <tr><td class="id">IF-14</td><td>APP-07 Dispute</td><td>EXT-03 Mastercard dispute API</td><td class="proto">HTTPS, mTLS</td><td class="proto">Client certificate</td><td>Evidence pack submission</td><td class="tight">Sync</td></tr>
+      <tr><td class="id">IF-15</td><td>APP-11 Backbone</td><td>DAT-05 Audit archive</td><td class="proto">Kafka Connect, WORM sink</td><td class="proto">Service account, write once</td><td>Immutable audit trail</td><td class="tight">Async</td></tr>
+      <tr><td class="id">IF-16</td><td>EXT-05 Merchant</td><td>EXT-04 Auth network</td><td class="proto">Acquirer rails</td><td class="proto">Out of scope for this bank</td><td>Auth submission after agent verification</td><td class="tight">Sync</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <span class="secnum">03</span>
+  <h2 class="cond">Primary flow, human not present purchase</h2>
+  <p class="lede">The hardest case, because no human is at the keyboard when money moves. Human present flows are a strict subset with step 06 replaced by a live approval.</p>
+  <ol class="seq">
+    <li><div><span class="who">EXT-01 to EDG-01, IF-01</span><b>Cardholder enrolls an agent.</b> Authenticates in the bank app, selects an agent, sets caps, merchant categories and an expiry. Step up authentication is required above the product policy threshold.</div></li>
+    <li><div><span class="who">APP-01 to EXT-03</span><b>Bank requests an Agentic Token.</b> Enablement service calls Mastercard to mint a token bound to the agent identifier, merchant scope and consent policy. The primary account number never leaves the CDE.</div></li>
+    <li><div><span class="who">APP-11 to DAT-02, IF-13</span><b>Consent is written to the ledger.</b> Append only, with the consent receipt identifier that will appear on every downstream artifact.</div></li>
+    <li><div><span class="who">EXT-01 to EXT-02</span><b>Cardholder states an intent.</b> The agent captures the goal and constraints and produces a signed intent mandate. The bank sees the mandate, not the conversation.</div></li>
+    <li><div><span class="who">EXT-02 to EDG-02, IF-02</span><b>Agent presents itself.</b> Request headers are signed under RFC 9421. The gateway verifies against the network operated key directory before any business logic runs.</div></li>
+    <li><div><span class="who">EXT-02 internal</span><b>Conditions are met and the cart locks.</b> The agent generates a cart mandate carrying exact items, price, merchant and timestamp, signed under the earlier intent mandate.</div></li>
+    <li><div><span class="who">EXT-05 to EXT-04 to EDG-04, IF-04</span><b>Authorization arrives.</b> The message carries the agent indicator, token assurance level and the mandate reference.</div></li>
+    <li><div><span class="who">EDG-04 to APP-04 to APP-03, IF-08, IF-09</span><b>Decision inside the latency budget.</b> Fraud scores with agent aware features. Limits validates the cap, velocity and merchant scope against the mandate. Any mismatch declines with a distinct reason code.</div></li>
+    <li><div><span class="who">APP-08 to EXT-01</span><b>Cardholder is told.</b> Push notification within seconds, showing what the agent bought and offering one tap to dispute.</div></li>
+    <li><div><span class="who">APP-06 to DAT-05, IF-15</span><b>Evidence is sealed.</b> Mandate chain, agent identity, action log, approved cart and delivery proof are written once and retained. This is what makes the claim defensible later.</div></li>
+    <li><div><span class="who">APP-07 to EXT-03, IF-14</span><b>If disputed, the pack is already built.</b> Regulation Z timers run from claim intake. Evidence assembly is a lookup, not an investigation.</div></li>
+  </ol>
+</section>
+
+<section>
+  <span class="secnum">04</span>
+  <h2 class="cond">Architecture decisions</h2>
+  <p class="lede">Recorded here so the drawing can be read without the meeting that produced it.</p>
+  <div class="cols">
+    <div class="card">
+      <h3>AD-01 Mandate vault is a new system of record</h3>
+      <ul>
+        <li>A signed artifact authorizing a future purchase has no existing home in the estate.</li>
+        <li>Rejected: storing mandates as blobs on the consent record. Retrieval and retention obligations differ.</li>
+        <li>Consequence: a new HSM backed store with its own retention, dual control and examination posture.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>AD-02 Agent traffic terminates in its own gateway</h3>
+      <ul>
+        <li>Signature verification, rate limiting and agent reputation are unlike consumer app traffic.</li>
+        <li>Rejected: extending the existing open banking gateway. Different auth model, different blast radius.</li>
+        <li>Consequence: EDG-02 is separately deployable and separately disableable.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>AD-03 Decisioning stays in the authorization path</h3>
+      <ul>
+        <li>Scope enforcement after the fact is a reconciliation exercise, not a control.</li>
+        <li>Rejected: asynchronous post auth validation with reversal. Poor customer outcome, weak examination story.</li>
+        <li>Consequence: an 80 ms budget for APP-04 and 25 ms for APP-03, which constrains model complexity.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>AD-04 Offer eligibility is a service, not a report</h3>
+      <ul>
+        <li>An agent needs cart level card value before checkout, not statement level value after.</li>
+        <li>Rejected: exposing the existing rewards batch. Wrong latency, wrong granularity, wrong consumer.</li>
+        <li>Consequence: APP-05 fronts DAT-04 with a read through cache and a public facing contract.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>AD-05 Evidence is captured on every agent order</h3>
+      <ul>
+        <li>Backfilling evidence after the first dispute wave is not possible.</li>
+        <li>Rejected: capture on dispute only. The artifacts are ephemeral at the agent surface.</li>
+        <li>Consequence: storage and retention cost from day one for transactions that will mostly never be disputed.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>AD-06 Network agnostic internal model</h3>
+      <ul>
+        <li>Mastercard Agent Pay is the launch partner, not the internal data model.</li>
+        <li>Rejected: modelling on Agentic Token semantics directly. Locks the estate to one network.</li>
+        <li>Consequence: an internal mandate and scope model with adapters per network. Slower to launch, cheaper to extend.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="secnum">05</span>
+  <h2 class="cond">Cross cutting concerns and non functional requirements</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>Security</h3>
+      <ul>
+        <li>Zero trust service mesh, mutual TLS between all internal containers, SPIFFE workload identity.</li>
+        <li>Prompt injection is treated as an external threat with no internal mitigation. Controls are deterministic: caps, allow lists, mandate binding.</li>
+        <li>Agent credentials are scoped, short lived and revocable in real time from the bank app.</li>
+        <li>Key material in HSM. Dual control on mandate vault access. Privileged access reviewed quarterly.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Availability and performance</h3>
+      <ul>
+        <li>Authorization path 99.99 percent, active active across two regions.</li>
+        <li>Agent gateway 99.9 percent. Degradation declines new agent orders rather than failing open.</li>
+        <li>Offer eligibility 99.5 percent. Timeout returns no offer rather than blocking checkout.</li>
+        <li>Global kill switch at product and agent level, effective within 60 seconds.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Data and retention</h3>
+      <ul>
+        <li>Mandates retained for the statute of limitations on the underlying claim, minimum seven years.</li>
+        <li>Audit archive write once, examination ready, indexed by consent receipt.</li>
+        <li>No conversation content ingested. The bank stores mandates and outcomes, not the prompt.</li>
+        <li>Right to delete constrained by record keeping obligations. Documented in the privacy assessment.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Observability</h3>
+      <ul>
+        <li>Distributed tracing from agent request through authorization, correlated on consent receipt.</li>
+        <li>Decline reason codes distinguish scope breach, cap breach, expired mandate and fraud.</li>
+        <li>Unmandated spend on an agent enabled account is a page, not a ticket.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="secnum">06</span>
+  <h2 class="cond">Standards and compliance register</h2>
+  <table>
+    <thead><tr><th>Standard</th><th>Applies to</th><th>Obligation</th></tr></thead>
+    <tbody>
+      <tr><td class="proto">RFC 9421, Web Bot Auth</td><td>EDG-02</td><td>Verify agent HTTP message signatures against the network key directory.</td></tr>
+      <tr><td class="proto">OAuth 2.1, FAPI 2.0, OIDC</td><td>EDG-01, EDG-02, EDG-05</td><td>Authorization and authentication for cardholder and agent channels.</td></tr>
+      <tr><td class="proto">W3C Verifiable Credentials</td><td>APP-02, DAT-01</td><td>Mandate format, signature verification and revocation semantics.</td></tr>
+      <tr><td class="proto">EMVCo tokenization, MDES</td><td>EXT-03, EDG-04</td><td>Agentic Token issuance, scope binding and lifecycle.</td></tr>
+      <tr><td class="proto">ISO 8583, ISO 20022</td><td>EDG-04</td><td>Authorization messaging including agent indicator carriage.</td></tr>
+      <tr><td class="proto">PCI DSS 4.0</td><td>EDG-04, DAT-01, DAT-03</td><td>Cardholder data environment scope, segmentation testing, annual assessment.</td></tr>
+      <tr><td class="proto">Regulation Z, 12 CFR 1026</td><td>APP-07</td><td>Consumer dispute rights survive delegation to an agent. Timers unchanged.</td></tr>
+      <tr><td class="proto">Regulation E</td><td>APP-07</td><td>Applies where a debit funding source is enabled. Out of scope for this release.</td></tr>
+      <tr><td class="proto">NIST SP 800-63B</td><td>EDG-05</td><td>Authenticator assurance level for enrollment and high value scope changes.</td></tr>
+      <tr><td class="proto">GLBA, state privacy law</td><td>DAT-02, DAT-05</td><td>Consent record keeping, disclosure and deletion constraints.</td></tr>
+      <tr><td class="proto">SR 11-7</td><td>APP-04</td><td>Model risk management for agent aware fraud models.</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section>
+  <span class="secnum">07</span>
+  <h2 class="cond">Scope, assumptions and open decisions</h2>
+  <div class="cols">
+    <div class="card">
+      <h3>In scope, release one</h3>
+      <ul>
+        <li>Credit card products only, human present agent purchases.</li>
+        <li>Mastercard Agent Pay as the sole network integration.</li>
+        <li>Enrollment, consent, limits, evidence capture and alerting.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Out of scope</h3>
+      <ul>
+        <li>Debit and deposit funding sources.</li>
+        <li>Human not present execution, gated behind AD-03 latency proving and a written network dispute rule.</li>
+        <li>Commercial and small business cards.</li>
+        <li>Third party agent access to offer eligibility.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Assumptions</h3>
+      <ul>
+        <li>Mastercard continues to operate the agent key directory and registry.</li>
+        <li>Card core can carry an agent indicator without a release train dependency beyond one quarter.</li>
+        <li>Merchant side agent verification adoption continues to spread at the edge.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Open decisions</h3>
+      <ul>
+        <li>Whether the bank writes a voluntary liability commitment for registered agent errors ahead of network rules.</li>
+        <li>Mandate retention period, pending legal opinion.</li>
+        <li>Whether offer eligibility is exposed to agents directly or only through the network.</li>
+        <li>Dual protocol support for a second network, and on what trigger.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="titleblock">
+  <div class="tb"><dl><dt>Drawing</dt><dd class="mono">ACP-ARC-001</dd></dl></div>
+  <div class="tb"><dl><dt>Revision</dt><dd class="mono">A, draft</dd></dl></div>
+  <div class="tb"><dl><dt>Issued</dt><dd class="mono">2026-08-26</dd></dl></div>
+  <div class="tb"><dl><dt>Notation</dt><dd>C4 container, level 2</dd></dl></div>
+  <div class="tb"><dl><dt>Status</dt><dd>For review</dd></dl></div>
+  <div class="tb"><dl><dt>Review body</dt><dd>Architecture review board</dd></dl></div>
+  <div class="tb tb-wide">
+    <dl><dt>Notes</dt>
+    <dd style="font-weight:400;font-size:12.5px;color:#3E4A5A">Containers, interfaces and technology selections in this drawing are a reference design, not an approved target state. Network specific behaviour reflects Mastercard Agent Pay as documented at the date of issue and should be confirmed against the current specification before build. Sections 04 and 07 carry the decisions that will change the drawing if they move.</dd></dl>
+  </div>
+</div>
+
+</div>
