@@ -1,0 +1,189 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Signal Network Model</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&display=swap">
+<style>
+/* Layout: a full-screen zoomable world. One Citi node at the top, six business networks across, one Citi decision at the bottom. */
+:root{--bg:#050F2C;--panel:#0E2358;--line:#2F4A8C;--ink:#F6F3EA;--on:#050F2C;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--ink)}
+#net{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#net:active{cursor:grabbing}
+.bar{position:fixed;z-index:5;top:calc(10px + env(safe-area-inset-top,0px));left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;pointer-events:none}
+.bar button{pointer-events:auto;flex:none;font:700 14px "Schibsted Grotesk",Arial,sans-serif;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer}
+.bar button[aria-pressed=true]{background:var(--ink);color:var(--on);border-color:var(--ink)}
+.bar button:focus-visible{outline:2px solid #8DB6FF;outline-offset:1px}
+.gap{flex:1 0 8px}
+</style>
+<canvas id="net" role="img" aria-label="Zoomable animated network. Citi sits at the top. Six networks run across: Services, Markets, Citi Enterprise, US Consumer Cards, Banking, and Wealth. Each has internal data, goals, domains, external data, and people. Each narrows to a first recommendation, runs a second loop to one recommendation, and those narrow to one Citi decision and a person who approves. Pink marks where other businesses touch US Consumer Cards."></canvas>
+<div class="bar" id="bar"></div>
+<script>
+(()=>{
+const C={n:'#8DB6FF',m:'#F6C563',i:'#F6F3EA',d:'#7A93C9',g:'#62DFB0',o:'#FF9EC4',soft:'#C8D3E8',bg:'#050F2C'};
+const F='"Schibsted Grotesk",Arial,sans-serif';
+const cv=document.getElementById('net'),ctx=cv.getContext('2d');
+let seed=11;const rnd=()=>{seed=seed*16807%2147483647;return (seed-1)/2147483646};
+const nodes=[],edges=[],T=[];
+const add=(x,y,c,r)=>{nodes.push({x,y,c,r});return nodes.length-1};
+const link=(a,b,k='l')=>edges.push([a,b,k]);
+const text=(s,x,y,o={})=>T.push({s,x,y,size:o.size||15,w:o.w||500,col:o.col||C.soft,al:o.al||'center',pill:o.pill});
+const lines=(s,x,y,o={})=>s.split('\n').forEach((l,i)=>text(l,x,y+i*(o.lh||18),o));
+const THEMES=['Credit cycle','Client demand','Client sentiment','Regulatory pressure','Competitor moves','Agent adoption','Fraud patterns','Partner health','Funding costs','Operational risk'];
+const MOVES=['Tighten risk','Grow balances','New offer','Trust campaign','New controls','Partner deal','Digital build','Hold and watch'];
+const SCORES=[['Revenue','n'],['Clients','n'],['Volume','n'],['Trust','m'],['Simplicity','m'],['Vision fit','m'],['Ripple effect','i'],['Guardrails','g']];
+const PEOPLE=[['Their numbers',-178,['Income','Savings','Debt','Credit score']],['Their outcomes',-43,['Security','Freedom','Family','Purpose']],['Life functions',116,['Work','Home','Health','Travel']]];
+const P=[
+{key:'services',name:'Services',off:140,goals:[['Revenue','n'],['Client balances','n'],['Payment volume','n'],['Client trust','m'],['Always on','m'],['Vision','m']],
+ int:[['Client\ndata',['Accounts','Segments','Tenure']],['Flows',['Payments','Balances','Trade']],['Risk',['Limits','Exposure','Losses']],['Service',['Cases','Complaints','Contacts']],['Policy',['Policies','Decisions','Audits']]],
+ ext:[['Competition',['Global banks','Fintechs','Networks']],['Partners',['Banks','Clearing','Custody']],['Legal',['Fed','OCC','Sanctions']],['Economy',['Rates','Trade','FX']],['Trends',['Real-time','Stablecoins','Sentiment']]],
+ dom:[['Treasury\nSolutions','Deposits'],['Trade\nFinance','Trade volume'],['Securities\nServices','Assets under custody'],['Cross-Border\nPayments','Payment volume'],['Liquidity','Average balances'],['Commercial\nCards','Card volume'],['Client\nOnboarding','Time to onboard'],['Operations','Straight-through rate'],['Technology','Uptime'],['Risk and\nControls','Open issues']]},
+{key:'markets',name:'Markets',off:30,goals:[['Revenue','n'],['Client wallet','n'],['Returns','n'],['Client trust','m'],['Disciplined risk','m'],['Vision','m']],
+ int:[['Client\ndata',['Accounts','Segments','Coverage']],['Flows',['Trades','Positions','Inventory']],['Risk',['VaR','Limits','Losses']],['Service',['Sales','Settlement','Contacts']],['Policy',['Policies','Decisions','Audits']]],
+ ext:[['Competition',['Global banks','Hedge funds','Market makers']],['Partners',['Exchanges','Clearing','Custody']],['Legal',['SEC','CFTC','Fed']],['Economy',['Rates','Inflation','FX']],['Trends',['Volatility','Tokenization','Sentiment']]],
+ dom:[['Rates','Rates revenue'],['FX','FX revenue'],['Credit\nTrading','Credit revenue'],['Equities','Equities revenue'],['Commodities','Commodities revenue'],['Securitized\nProducts','Deal volume'],['Prime\nServices','Prime balances'],['Sales','Client wallet'],['Market Risk','VaR'],['Operations','Settlement rate']]},
+{key:'enterprise',name:'Citi Enterprise',off:0,goals:[['Revenue','n'],['RoTCE','n'],['CET1 capital','n'],['Client trust','m'],['Safety and soundness','m'],['Mission','m']],
+ int:[['Business\ndata',['Results','Forecasts','Plans']],['Capital',['Liquidity','Funding','RWA']],['Risk',['Limits','Losses','Stress tests']],['People',['Talent','Culture','Attrition']],['Policy',['Policies','Controls','Audits']]],
+ ext:[['Competition',['Global banks','Regional banks','Fintechs']],['Partners',['Investors','Vendors','Agencies']],['Legal',['Fed','OCC','CFPB']],['Economy',['GDP','Rates','Inflation']],['Trends',['AI','Geopolitics','Sentiment']]],
+ dom:[['Risk','Risk appetite'],['Finance','RoTCE'],['Treasury','CET1 ratio'],['Compliance','Open issues'],['Legal','Legal exposure'],['Technology','Uptime'],['Operations','Efficiency ratio'],['Human\nResources','Attrition'],['Internal\nAudit','Audit findings'],['Enterprise\nData','Data quality'],['Strategy','Plan delivery'],['Communications','Reputation']]},
+{key:'cards',name:'US Consumer Cards',off:0,goals:[['Revenue','n'],['Customers','n'],['Purchases','n'],['Customer trust','m'],['Simple banking','m'],['North Star vision','m']],
+ int:[['Customer\ndata',['Accounts','Segments','Tenure']],['Spending',['Purchases','Payments','Balances']],['Credit\nand risk',['Scores','Past due','Losses']],['Service',['Complaints','Disputes','Contacts']],['Policy',['Policies','Decisions','Audits']]],
+ ext:[['Competition',['Issuers','Fintechs','Wallets']],['Partners',['Visa','Mastercard','Co-brands']],['Legal',['CFPB','OCC','Fed']],['Economy',['Rates','Jobs','Inflation']],['Trends',['AI agents','News','Sentiment']]],
+ dom:[['Product\nand Portfolio','Risk-adjusted revenue'],['Marketing and\nAcquisitions','Booked accounts'],['Partnerships','Partner spend'],['Loyalty\nand Rewards','Rewards cost'],['Customer\nExperience','Complaint rate'],['Digital\nand Technology','Digital actives'],['Collections\nand Recovery','Cure rate'],['Credit\nUnderwriting','Approval rate'],['Credit Risk\nManagement','NCL rate'],['Fraud\nand Disputes','Fraud loss'],['Data and\nDecisioning','Decision lift'],['Regulatory and\nCompliance','Open issues'],['Finance\nand Capital','RoTCE']]},
+{key:'banking',name:'Banking',off:30,goals:[['Revenue','n'],['Fee wallet','n'],['Returns','n'],['Client trust','m'],['Disciplined credit','m'],['Vision','m']],
+ int:[['Client\ndata',['Accounts','Sectors','Coverage']],['Deals',['Pipeline','Fees','Loans']],['Risk',['Exposure','Ratings','Losses']],['Service',['Bankers','Contacts','Cases']],['Policy',['Policies','Decisions','Audits']]],
+ ext:[['Competition',['Global banks','Boutiques','Private credit']],['Partners',['Sponsors','Syndicates','Advisors']],['Legal',['SEC','Fed','OCC']],['Economy',['Rates','Credit spreads','GDP']],['Trends',['M&A cycle','Private credit','Sentiment']]],
+ dom:[['Investment\nBanking','Fee revenue'],['M&A\nAdvisory','Deal count'],['Capital\nMarkets','Issuance volume'],['Corporate\nLending','Loan book'],['Client\nCoverage','Wallet share'],['Industry\nGroups','Pipeline'],['Credit\nUnderwriting','Approval rate'],['Portfolio\nRisk','Credit losses'],['Compliance','Open issues'],['Finance','Return on capital']]},
+{key:'wealth',name:'Wealth',off:140,goals:[['Revenue','n'],['Client assets','n'],['Net new assets','n'],['Client trust','m'],['Advice that lasts','m'],['Vision','m']],
+ int:[['Client\ndata',['Accounts','Households','Tenure']],['Flows',['Assets','Deposits','Loans']],['Risk',['Scores','Past due','Losses']],['Service',['Advisors','Complaints','Contacts']],['Policy',['Policies','Decisions','Audits']]],
+ ext:[['Competition',['Private banks','Brokerages','Fintechs']],['Partners',['Fund firms','Insurers','Employers']],['Legal',['SEC','CFPB','OCC']],['Economy',['Rates','Home prices','Markets']],['Trends',['Robo-advice','Wealth transfer','Sentiment']]],
+ dom:[['Private\nBank','Client assets'],['Citigold','Net new assets'],['Wealth\nat Work','Advisor clients'],['Retail\nBanking','Deposits'],['Mortgage','Originations'],['Personal\nLending','Loan losses'],['Investments','Fee revenue'],['Advisors','Advisor count'],['Digital\nBanking','Digital actives'],['Risk','Open issues']]}
+];
+const PW=1800,GAP=100,Y0=430,WORLD=P.length*PW+(P.length-1)*GAP,CX=WORLD/2;
+const domOf={};
+const cloud=(n,a,b,cy,j)=>{const o=[];for(let i=0;i<n;i++){const f=(i+rnd())/n;o.push(add(a+(b-a)*f,cy+(rnd()-.5)*j,'d',1.5))}return o};
+const wire=(A,B,k)=>{const S=[...A].sort((p,q)=>nodes[p].x-nodes[q].x),SB=[...B].sort((p,q)=>nodes[p].x-nodes[q].x);S.forEach((a,i)=>{const f=i/(S.length-1);for(let j=0;j<k;j++){const c=f*(SB.length-1)+(rnd()-.5)*SB.length*.3;link(a,SB[Math.max(0,Math.min(SB.length-1,Math.round(c)))])}})};
+const pods=[];
+function pod(d,idx){
+ const ox=idx*(PW+GAP),oy=Y0+d.off,X=x=>ox+x,Y=y=>oy+y,features=[];
+ const side=(root,label,x0,list)=>{const r=add(X(root),Y(70),'i',16);text(label,X(root),Y(36),{size:24,w:800,col:C.i});
+  list.forEach(([b,kids],i)=>{const bx=x0+i*86,bn=add(X(bx),Y(160),'i',7);link(r,bn,'t');lines(b,X(bx),Y(184),{size:15,w:700,col:C.i});
+   kids.forEach((k,j)=>{const y=250+j*44,n=add(X(bx-30),Y(y),'i',4);link(bn,n,'t');const w=k.split(' ');
+    if(k.length>10&&w.length>1)lines(w[0]+'\n'+w.slice(1).join(' '),X(bx-20),Y(y-7),{size:14,al:'left',lh:15});else text(k,X(bx-20),Y(y),{size:14,al:'left'});features.push(n)})});return r};
+ side(215,'Internal',42,d.int);const ext=side(1552,'External',1380,d.ext);
+ const co=add(X(900),Y(70),'i',18);text(d.name,X(900),Y(32),{size:30,w:800,col:C.i});
+ const goals=d.goals.map(([g,c],i)=>{const x=560+i*136,n=add(X(x),Y(160),c,10);link(co,n,'t');text(g,X(x),Y(186),{size:15,w:700,col:C[c]});return n});
+ const dn=[],sp=820/(d.dom.length-1);
+ d.dom.forEach(([name,kpi],i)=>{const x=470+i*sp,y=i%2?300:240,n=add(X(x),Y(y),i%2?'m':'n',7);dn.push(n);link(goals[Math.floor(rnd()*3)],n,'t');link(goals[3+Math.floor(rnd()*3)],n,'t');lines(name,X(x),Y(y+22),{size:15,w:700,col:C.i});
+  const my=i%2?470:420;for(let k=0;k<4;k++){const m=add(X(x-18+k*12),Y(my),k===3?'m':'n',3.5);link(n,m,'t');features.push(m)}text(kpi,X(x),Y(my+20),{size:14});nodes[n].my=Y(my+38)});
+ text('Each domain: 3 numbers and 1 outcome',X(900),Y(548),{size:15,w:700});
+ lines('Each is good, bad, or either. Each maps like a business\nwith its own goals and North Star.',X(1570),Y(366),{size:14});
+ const pe=add(X(1400),Y(420),'g',11);link(ext,pe,'p');text('People',X(1416),Y(420),{size:21,w:800,col:C.g,al:'left'});text('In every domain',X(1496),Y(421),{size:14,al:'left'});
+ PEOPLE.forEach(([h,dx,items])=>{const x=1555+dx,g=add(X(x),Y(462),'g',5);link(pe,g,'p');text(h,X(x+12),Y(462),{size:15,w:700,col:C.g,al:'left'});items.forEach((s,i)=>{const n=add(X(x+8),Y(490+i*25),'g',3);link(g,n,'p');text(s,X(x+18),Y(490+i*25),{size:14,al:'left'});features.push(n)})});
+ dn.forEach(n=>link(pe,n,'p'));
+ const l3=cloud(130,X(90),X(1710),Y(650),120),l4=cloud(260,X(40),X(1760),Y(790),170),l5=cloud(130,X(160),X(1640),Y(925),110);
+ const named=(list,y,a,b,r,col)=>list.map((v,i)=>{const s=Array.isArray(v)?v[0]:v,c=Array.isArray(v)?v[1]:col,x=a+(b-a)*i/(list.length-1),n=add(X(x),Y(y),c,r);text(s,X(x),Y(y+21),{size:15,w:700,col:c==='d'?C.i:C[c]});return n});
+ const th=named(THEMES,1030,200,1600,5,'d'),mv=named(MOVES,1125,340,1460,5,'d'),sc=named(SCORES,1220,460,1340,8,'i');
+ const first=add(X(900),Y(1320),'g',20);text('First recommendation',X(935),Y(1320),{size:22,w:800,col:C.g,al:'left'});
+ const l6=cloud(90,X(440),X(1360),Y(1460),90),l7=cloud(170,X(220),X(1580),Y(1590),130),l8=cloud(80,X(480),X(1320),Y(1720),80);
+ const sc2=named(SCORES,1830,460,1340,8,'i');
+ const rec=add(X(900),Y(1930),'g',24);text('One recommendation',X(940),Y(1930),{size:26,w:800,col:C.g,al:'left'});
+ wire(features,l3,3);wire(l3,l4,3);wire(l4,l5,2);wire(l5,th,1);wire(th,mv,3);wire(mv,sc,4);sc.forEach(s=>link(s,first));l6.forEach(n=>link(first,n));wire(l6,l7,3);wire(l7,l8,3);wire(l8,sc2,2);sc2.forEach(s=>link(s,rec));
+ [['Patterns',650],['Everything connected',790],['What matters',925],['Test it across domains',1460],['Check the ripple effects',1590],['What still holds',1720]].forEach(([s,y])=>text(s,X(900),Y(y),{size:19,w:800,col:C.i,pill:true}));
+ [['Themes',1030],['Possible moves',1125],['Scored on goals',1220],['Scored again',1830]].forEach(([s,y])=>text(s,X(30),Y(y),{size:17,w:700,al:'left'}));
+ domOf[d.key]=dn;pods.push({key:d.key,name:d.name,x:ox,y:oy,co,rec});
+}
+P.forEach(pod);
+const citi=add(CX,80,'i',34);text('Citi',CX,26,{size:44,w:800,col:C.i});
+pods.forEach(p=>link(citi,p.co,'t'));
+[['Revenue','n'],['RoTCE','n'],['CET1 capital','n'],['Client trust','m'],['Safety and soundness','m'],['Mission','m']].forEach(([g,c],i)=>{const x=CX-1000+i*400,n=add(x,210,c,14);link(citi,n,'t');text(g,x,246,{size:24,w:700,col:C[c]})});
+const OV=[['services',5,[0],'Shared card rails'],['services',3,[5],'Same payment rails'],['markets',5,[12],'Card funding'],['markets',0,[12],'Cost of funds'],['enterprise',2,[12],'Funding and capital'],['enterprise',3,[11],'Same regulators'],['enterprise',0,[8],'Credit appetite'],['enterprise',5,[5],'Shared platforms'],['banking',4,[2],'Co-brand partners'],['wealth',1,[3,4],'Shared cardholders'],['wealth',3,[4,5],'Shared customers'],['wealth',4,[8],'Early credit stress'],['wealth',5,[7,8],'Same borrower']];
+const rings=new Set();
+OV.forEach(([k,i,to,why])=>{const n=domOf[k][i],N=nodes[n];N.c='o';text(why,N.x,N.my,{size:14,w:700,col:C.o});to.forEach(d=>{link(n,domOf.cards[d],'o');rings.add(domOf.cards[d])})});
+const By=Y0+140+1930+330;
+const rowAt=(list,y,span,r,fs)=>list.map(([s,c],i)=>{const x=CX-span/2+span*i/(list.length-1),n=add(x,y,c,r);text(s,x,y+r+20,{size:fs,w:700,col:c==='d'?C.i:C[c]});return n});
+const eTh=rowAt([['Capital','d'],['Clients','d'],['Risk','d'],['Regulation','d'],['Growth','d'],['Cost','d']],By,2600,12,24);
+const eSc=rowAt([['Revenue','n'],['RoTCE','n'],['CET1 capital','n'],['Client trust','m'],['Safety','m'],['Mission','m']],By+230,2800,14,24);
+const big=add(CX,By+460,'i',38),who=add(CX,By+610,'g',18);
+text('One Citi decision',CX+70,By+460,{size:38,w:800,col:C.i,al:'left'});
+text('A person approves',CX+36,By+610,{size:28,w:700,col:C.g,al:'left'});
+const ask=add(CX-420,By+460,'g',14);link(ask,big);text('What do you want to know or solve for?',CX-446,By+460,{size:24,w:700,col:C.g,al:'right'});
+pods.forEach(p=>eTh.forEach(t=>link(p.rec,t,'t')));
+eTh.forEach(t=>eSc.forEach(s=>link(t,s,'t')));eSc.forEach(s=>link(s,big,'t'));link(big,who,'t');
+[['Needs a decision',-480],['Hold',-160],['Build in IPDLC',160],['What we learned',480]].forEach(([s,dx])=>{const n=add(CX+dx,By+760,'g',10);link(who,n,'t');text(s,CX+dx,By+790,{size:22,w:700,col:C.i})});
+text('Illustrative model. Labels show typical bank categories, not Citi data.',CX,By+850,{size:22});
+const WH=By+900;
+const adj=nodes.map(()=>[]);edges.forEach(([a,b])=>adj[a].push(b));
+const ST={t:'rgba(200,211,232,.42)',l:'rgba(141,182,255,.12)',p:'rgba(98,223,176,.32)',o:'rgba(255,158,196,.7)'};
+const PATH={};Object.keys(ST).forEach(k=>PATH[k]=new Path2D());
+edges.forEach(([a,b,k])=>{const A=nodes[a],B=nodes[b];PATH[k].moveTo(A.x,A.y);PATH[k].lineTo(B.x,B.y)});
+const DOT={};nodes.forEach(n=>{(DOT[n.c]=DOT[n.c]||new Path2D()).moveTo(n.x+n.r,n.y);DOT[n.c].arc(n.x,n.y,n.r,0,7)});
+const RING=new Path2D();rings.forEach(i=>{const n=nodes[i];RING.moveTo(n.x+n.r+5,n.y);RING.arc(n.x,n.y,n.r+5,0,7)});
+let parts=[];
+const pick=a=>adj[a].length?adj[a][Math.floor(Math.random()*adj[a].length)]:null;
+const spawn=any=>{let a=citi,h=any?Math.floor(Math.random()*14):0;while(h--&&adj[a].length)a=pick(a);return {a,b:pick(a),t:Math.random(),c:Math.random()<.5?'n':'m'}};
+let W,H,dpr,cam={s:.1,x:0,y:0},target=null,run=true,dirty=true,raf=null,last=0,focus='all';
+const still=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function view(x,y,w,h){const top=56,s=Math.min(W/w,(H-top)/h)*.97;return {s,x:(W-w*s)/2-x*s,y:top+((H-top)-h*s)/2-y*s}}
+const fit=()=>view(0,0,WORLD,WH);
+function go(v){target=v;kick()}
+function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;dirty=true}
+function draw(){
+ const s=cam.s,minx=-cam.x/s,maxx=(W-cam.x)/s,miny=-cam.y/s,maxy=(H-cam.y)/s;
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
+ ctx.setTransform(dpr*s,0,0,dpr*s,dpr*cam.x,dpr*cam.y);
+ ctx.lineWidth=Math.max(.8,.6/s);
+ Object.keys(ST).forEach(k=>{ctx.strokeStyle=ST[k];ctx.stroke(PATH[k])});
+ Object.keys(DOT).forEach(k=>{ctx.fillStyle=C[k];ctx.fill(DOT[k])});
+ ctx.strokeStyle=C.o;ctx.lineWidth=Math.max(3,1.2/s);ctx.stroke(RING);
+ ctx.strokeStyle=C.i;ctx.lineWidth=Math.max(4,1.5/s);ctx.beginPath();ctx.arc(CX,By+460,50,0,7);ctx.stroke();
+ const pr=Math.max(2.6,1.3/s);
+ parts.forEach(p=>{if(p.b===null)return;const A=nodes[p.a],B=nodes[p.b],x=A.x+(B.x-A.x)*p.t,y=A.y+(B.y-A.y)*p.t;if(x<minx||x>maxx||y<miny||y>maxy)return;ctx.fillStyle=C[p.c];ctx.beginPath();ctx.arc(x,y,pr,0,7);ctx.fill()});
+ ctx.textBaseline='middle';
+ T.forEach(t=>{if(t.size*s<7)return;if(t.x<minx-300||t.x>maxx+300||t.y<miny-40||t.y>maxy+40)return;
+  ctx.font=`${t.w} ${t.size}px ${F}`;ctx.textAlign=t.al;
+  if(t.pill){const w=ctx.measureText(t.s).width+22;ctx.fillStyle=C.bg;ctx.fillRect(t.x-w/2,t.y-16,w,32)}else{ctx.strokeStyle=C.bg;ctx.lineWidth=4;ctx.lineJoin='round';ctx.strokeText(t.s,t.x,t.y)}
+  ctx.fillStyle=t.col;ctx.fillText(t.s,t.x,t.y)});
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ if(s<.42){ctx.textAlign='center';ctx.textBaseline='middle';ctx.font=`800 ${Math.max(13,Math.min(20,W/70))}px ${F}`;ctx.lineWidth=5;ctx.strokeStyle=C.bg;
+  pods.forEach(p=>{const n=nodes[p.co],x=n.x*s+cam.x,y=(n.y-46)*s+cam.y;ctx.strokeText(p.name,x,y);ctx.fillStyle=p.key==='cards'?C.o:C.i;ctx.fillText(p.name,x,y)});
+  if(s<.3)[['Citi',CX,10],['One Citi decision',CX,By+395]].forEach(([l,x,y])=>{const sx=x*s+cam.x,sy=y*s+cam.y;ctx.strokeText(l,sx,sy);ctx.fillStyle=C.i;ctx.fillText(l,sx,sy)})}
+}
+function frame(now){
+ raf=null;const dt=Math.min(.05,(now-last)/1000);last=now;
+ if(target){const k=1-Math.pow(.0015,dt);cam.s+=(target.s-cam.s)*k;cam.x+=(target.x-cam.x)*k;cam.y+=(target.y-cam.y)*k;if(Math.abs(target.s-cam.s)/target.s<.002){cam={...target};target=null}dirty=true}
+ if(run&&!still){parts.forEach((p,i)=>{if(p.b===null){parts[i]=spawn(false);return}p.t+=dt*.8;if(p.t>=1){p.a=p.b;p.t=0;p.b=pick(p.a)}});dirty=true}
+ if(dirty){draw();dirty=false}
+ if((run&&!still)||target)kick();
+}
+function kick(){if(!raf)raf=requestAnimationFrame(t=>{if(!last)last=t;frame(t)})}
+const redraw=()=>{dirty=true;kick()};
+const bar=document.getElementById('bar');let lastPod='cards';
+function setFocus(k){focus=k;bar.querySelectorAll('[data-k]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.k===k)))}
+const zoomAt=(px,py,f)=>{target=null;const s=Math.max(fit().s*.7,Math.min(5,cam.s*f)),r=s/cam.s;cam.x=px-(px-cam.x)*r;cam.y=py-(py-cam.y)*r;cam.s=s;setFocus('');redraw()};
+cv.addEventListener('wheel',e=>{e.preventDefault();const mouse=!e.ctrlKey&&e.deltaX===0&&Math.abs(e.deltaY)>=80;if(e.ctrlKey||mouse)zoomAt(e.clientX,e.clientY,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0018)));else{target=null;cam.x-=e.deltaX;cam.y-=e.deltaY;setFocus('');redraw()}},{passive:false});
+const pts=new Map();let pinch=0;
+cv.addEventListener('pointerdown',e=>{cv.setPointerCapture(e.pointerId);pts.set(e.pointerId,{x:e.clientX,y:e.clientY});pinch=0});
+cv.addEventListener('pointermove',e=>{const p=pts.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;
+ if(pts.size===1){target=null;cam.x+=dx;cam.y+=dy;setFocus('');redraw()}
+ else if(pts.size===2){const [a,b]=[...pts.values()],d=Math.hypot(a.x-b.x,a.y-b.y);if(pinch)zoomAt((a.x+b.x)/2,(a.y+b.y)/2,d/pinch);pinch=d}});
+const up=e=>{pts.delete(e.pointerId);pinch=0};cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+cv.addEventListener('dblclick',e=>zoomAt(e.clientX,e.clientY,2));
+addEventListener('keydown',e=>{if(e.target.tagName==='BUTTON')return;if(e.key==='+'||e.key==='=')zoomAt(W/2,H/2,1.3);if(e.key==='-')zoomAt(W/2,H/2,.77);const m={ArrowLeft:[80,0],ArrowRight:[-80,0],ArrowUp:[0,80],ArrowDown:[0,-80]}[e.key];if(m){cam.x+=m[0];cam.y+=m[1];redraw()}});
+const btns=[['all','All'],...pods.map(p=>[p.key,p.name]),['end','Citi decision']];
+bar.innerHTML=btns.map(([k,n])=>`<button data-k="${k}" aria-pressed="${k==='all'}">${n}</button>`).join('')+'<span class="gap"></span><button id="lo">Second loop</button><button id="zo">Zoom out</button><button id="zi">Zoom in</button><button id="pp">Pause</button>';
+bar.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+ if(b.id==='zi')return zoomAt(W/2,H/2,1.5);if(b.id==='zo')return zoomAt(W/2,H/2,.67);
+ if(b.id==='lo'){const p=pods.find(x=>x.key===lastPod);setFocus('');return go(view(p.x-20,p.y+1250,PW+40,740))}
+ if(b.id==='pp'){run=!run;b.textContent=run?'Pause':'Play';kick();return}
+ const k=b.dataset.k;setFocus(k);
+ if(k==='all')go(fit());else if(k==='end')go(view(CX-1400,By-120,2800,1050));else{lastPod=k;const p=pods.find(x=>x.key===k);go(view(p.x-20,p.y-20,PW+40,1400))}});
+if(still)document.getElementById('pp').hidden=true;
+addEventListener('resize',()=>{size();if(focus==='all')cam=fit();redraw()});
+size();cam=fit();for(let i=0;i<(W<700?260:520);i++)parts.push(spawn(true));
+window.__sn={go:k=>bar.querySelector(`[data-k="${k}"]`).click()};
+kick();if(document.fonts)document.fonts.ready.then(redraw);
+})();
+</script>
+
+</body></html>

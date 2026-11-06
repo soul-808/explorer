@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>The Synthesis Story</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@500;700;800&display=swap">
+<style>
+/* Layout: a single scrolling article. The same skeleton fills in as you read. Palette matches the Signal Network Model. */
+:root{--bg:#050F2C;--panel:#0E2358;--line:#2F4A8C;--ink:#F6F3EA;--soft:#C8D3E8;--num:#8DB6FF;--sem:#F6C563;--human:#62DFB0;
+ --font:"Schibsted Grotesk",Arial,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 18px/1.45 var(--font)}
+section{padding-block:clamp(36px,6vw,64px);padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.in{width:100%;max-width:720px;margin-inline:auto;display:flex;flex-direction:column;gap:24px;min-width:0}
+section:first-child{padding-top:clamp(64px,12vw,120px)}
+section:last-child{padding-bottom:clamp(80px,14vw,140px)}
+h1,h2{margin:0;font-weight:800;line-height:1.08;letter-spacing:-.015em;text-wrap:balance}
+h1{font-size:clamp(42px,8vw,72px)}
+h2{font-size:clamp(28px,4.6vw,40px)}
+p{margin:0;color:var(--soft);font-size:clamp(18px,2.4vw,22px);max-width:34em}
+p.big{color:var(--ink)}
+.tag{align-self:flex-start;font-size:15px;font-weight:700;color:var(--bg);background:var(--human);padding:4px 10px;border-radius:6px}
+/* Skeleton */
+.sk{display:grid;gap:12px;grid-template-columns:1fr 1.5fr 1.5fr 1fr;grid-template-areas:"i q s e" "w w w w"}
+.b{min-width:0;border:1px solid var(--line);border-radius:10px;padding:16px;background:var(--panel);display:flex;flex-direction:column;gap:6px;transition:opacity .3s}
+.b b{font-size:18px;font-weight:800}
+.b span{font-size:16px;color:var(--soft)}
+.b.i{grid-area:i}.b.e{grid-area:e}.b.q{grid-area:q}.b.s{grid-area:s}.b.w{grid-area:w}
+.b.q b{color:var(--num)}.b.s b{color:var(--sem)}
+.b.i,.b.e{justify-content:center}
+.b.off{opacity:.28}
+.dom{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:2px 16px}
+.dom span{color:var(--ink)}
+@media(max-width:640px){.sk{grid-template-columns:1fr 1fr;grid-template-areas:"i e" "q s" "w w"}}
+/* Funnel */
+svg.fn{width:100%;height:auto;display:block}
+.flow{stroke-dasharray:2 9;animation:f 2.4s linear infinite}
+@keyframes f{to{stroke-dashoffset:-44}}
+.key{display:flex;flex-wrap:wrap;gap:6px 24px;font-size:17px;font-weight:700}
+.key .q{color:var(--num)}.key .s{color:var(--sem)}.key .o{color:var(--ink)}
+/* Count row */
+.row{display:flex;flex-wrap:wrap;gap:20px 40px}
+.grp{display:flex;flex-direction:column;gap:10px;min-width:0}
+.dots{display:flex;gap:10px}
+.dots i{width:26px;height:26px;border-radius:50%;background:currentColor;display:block}
+.dots i.h{background:none;border:3px solid currentColor}
+.dots i.m{opacity:.4}
+.grp b{font-size:18px}
+/* Two systems */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.two>div{min-width:0;border-radius:10px;padding:22px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);background:var(--panel)}
+.two>div.h{border-color:var(--human)}
+.two b{font-size:clamp(22px,3.4vw,30px);font-weight:800}
+.two span{color:var(--soft)}
+@media(max-width:560px){.two{grid-template-columns:1fr}}
+/* Back and forth */
+.say{display:flex;flex-direction:column;gap:10px}
+.say div{max-width:80%;padding:12px 16px;border-radius:12px;font-size:17px;background:var(--panel);border:1px solid var(--line)}
+.say div.me{align-self:flex-end;background:var(--human);border-color:var(--human);color:var(--bg);font-weight:700}
+/* Chain */
+ol.chain{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.chain li{position:relative;padding:0 0 18px 34px;font-size:clamp(20px,3vw,26px);font-weight:700}
+.chain li:last-child{padding-bottom:0}
+.chain li:before{content:"";position:absolute;left:4px;top:.42em;width:14px;height:14px;border-radius:50%;background:var(--c,var(--ink))}
+.chain li:not(:last-child):after{content:"";position:absolute;left:10px;top:1.1em;bottom:-.3em;width:2px;background:var(--line)}
+@media(prefers-reduced-motion:reduce){.flow{animation:none}.b{transition:none}}
+</style>
+
+<main id="s">
+<section><div class="in">
+ <h1>Thousands of signals. One decision.</h1>
+ <p class="big">So how do you get from here to there?</p>
+</div></section>
+
+<section><div class="in">
+ <h2>Every business boils down to this.</h2>
+ <div data-sk="base"></div>
+ <p>This is the skeleton. Same shape for any business.</p>
+</div></section>
+
+<section><div class="in">
+ <h2>Here it is for US Consumer Cards.</h2>
+ <div data-sk="cards"></div>
+ <p>Six things we are trying to move. Everything else serves those six.</p>
+</div></section>
+
+<section><div class="in">
+ <h2>The ways to achieve them are the subdomains.</h2>
+ <div data-sk="doms"></div>
+ <p>Thirteen teams. Each one is a way to move the six.</p>
+</div></section>
+
+<section><div class="in">
+ <h2>Take every signal. Test it against the six.</h2>
+ <div data-fn="0"></div>
+ <p>The model simplifies everything down. Then one question. Does this move a North Star metric?</p>
+</div></section>
+
+<section><div class="in">
+ <h2>But you don't know what you don't know.</h2>
+ <div data-fn="1"></div>
+ <p>So we also surface 3 to 5 things outside the six. Could be quantitative. Could be semantic. They just keep people aware.</p>
+</div></section>
+
+<section><div class="in">
+ <h2>Now the room has something to work with.</h2>
+ <div class="row">
+  <div class="grp" style="color:var(--num)"><div class="dots"><i></i><i></i><i></i></div><b>3 quantitative</b></div>
+  <div class="grp" style="color:var(--sem)"><div class="dots"><i></i><i></i><i></i></div><b>3 semantic</b></div>
+  <div class="grp" style="color:var(--ink)"><div class="dots"><i class="h"></i><i class="h"></i><i class="h"></i><i class="h m"></i><i class="h m"></i></div><b>3 to 5 outside</b></div>
+ </div>
+ <p class="big">Thousands of signals in. 11 things out, at most. Those drive the decisions.</p>
+ <p>That's the synthesis.</p>
+</div></section>
+
+<section><div class="in">
+ <h2>Synthesis is one system. Proposals are another.</h2>
+ <div class="two">
+  <div><b>Synthesis</b><span>What's happening, and does it matter?</span><span>Mostly the system.</span></div>
+  <div class="h"><b>Proposal</b><span>What do we do about it?</span><span>Mostly semantic. Mostly people.</span></div>
+ </div>
+ <p>The synthesis shapes the proposals. It doesn't replace the thinking.</p>
+ <span class="tag">Proposal piece: still figuring this out</span>
+</div></section>
+
+<section><div class="in">
+ <h2>The human has to be able to push back.</h2>
+ <div class="two">
+  <div><b>Start from scratch</b><span>Bring your own thinking.</span></div>
+  <div><b>Start from a scenario</b><span>Open one the system suggests.</span></div>
+ </div>
+ <div class="say">
+  <div class="me">What if we tighten credit here?</div>
+  <div>Here's what that does to the six, and what it touches outside Cards.</div>
+  <div class="me">Okay. Now try it with a smaller group.</div>
+ </div>
+ <p>Back and forth until it's your proposal, in your definitions.</p>
+ <span class="tag">Missing from the app today</span>
+</div></section>
+
+<section><div class="in">
+ <h2>So that's the whole map.</h2>
+ <ol class="chain">
+  <li>Every signal, simplified</li>
+  <li style="--c:var(--num)">Tested against the six</li>
+  <li>Plus 3 to 5 outside things</li>
+  <li style="--c:var(--human)">Back and forth with a human</li>
+  <li style="--c:var(--human)">A proposal</li>
+  <li>One decision a person approves</li>
+ </ol>
+ <p class="big">Deciding late is still deciding. It just costs more.</p>
+</div></section>
+</main>
+
+<script>
+(()=>{
+const Q=['Metric 1','Metric 2','Metric 3'],S=['Outcome 1','Outcome 2','Outcome 3'];
+const CQ=['Revenue','Customers','Purchases'],CS=['Customer trust','Simple banking','North Star vision'];
+const D=['Product and Portfolio','Marketing and Acquisitions','Partnerships','Loyalty and Rewards','Customer Experience','Digital and Technology','Collections and Recovery','Credit Underwriting','Credit Risk Management','Fraud and Disputes','Data and Decisioning','Regulatory and Compliance','Finance and Capital'];
+const box=(k,t,items,off,extra='')=>`<div class="b ${k}${off?' off':''}"><b>${t}</b>${extra}${items.map(x=>`<span>${x}</span>`).join('')}</div>`;
+const sk=(q,s,dom,off)=>`<div class="sk">${box('i','Internal',[],off)}${box('q','3 quantitative',q,off)}${box('s','3 semantic',s,off)}${box('e','External',[],off)}<div class="b w"><b>Ways to achieve them</b>${dom?`<div class="dom">${D.map(x=>`<span>${x}</span>`).join('')}</div>`:'<span>The business subdomains</span>'}</div></div>`;
+const V={base:sk(Q,S,false,false),cards:sk(CQ,CS,false,false),doms:sk(CQ,CS,true,true)};
+document.querySelectorAll('[data-sk]').forEach(e=>e.innerHTML=V[e.dataset.sk]);
+const fn=o=>{let r=7;const R=()=>{r=r*16807%2147483647;return (r-1)/2147483646};
+ const six=[0,1,2,3,4,5].map(i=>({x:200+i*56,y:290,c:i<3?'#8DB6FF':'#F6C563'})),out=[0,1,2,3,4].map(i=>({x:570+i*48,y:290}));
+ let L='',P='';
+ for(let i=0;i<150;i++){const x=20+R()*760,y=14+R()*96;P+=`<circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="2.2" fill="#7A93C9"/>`;
+  if(i%3===0){const k=o&&i%15===0,t=k?out[Math.floor(R()*5)]:six[Math.floor(R()*6)];L+=`<path class="flow" d="M${x.toFixed(0)} ${y.toFixed(0)}L${t.x} ${t.y}" stroke="${k?'#F6F3EA':'#6F8FD6'}" stroke-width="1.2" fill="none"/>`}}
+ six.forEach(n=>P+=`<circle cx="${n.x}" cy="${n.y}" r="15" fill="${n.c}"/>`);
+ if(o)out.forEach((n,i)=>P+=`<circle cx="${n.x}" cy="${n.y}" r="13" fill="#050F2C" stroke="#F6F3EA" stroke-width="3" opacity="${i>2?.45:1}"/>`);
+ return `<svg class="fn" viewBox="0 0 800 320" aria-hidden="true">${L}${P}</svg><div class="key"><span class="q">3 quantitative</span><span class="s">3 semantic</span>${o?'<span class="o">3 to 5 outside</span>':''}</div>`};
+document.querySelectorAll('[data-fn]').forEach(e=>e.innerHTML=fn(+e.dataset.fn));
+})();
+</script>
+
+</body></html>
